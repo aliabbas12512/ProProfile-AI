@@ -113,3 +113,15 @@ export function buildSkillSuggestionPrompt(profession: string, existing: string[
 export function buildTranslatePrompt(text: string, targetLanguage: string): string {
   return `Translate the following professional profile text into ${targetLanguage}. Keep names, numbers, and proper nouns as-is. Return only the translation, no preamble.\n\nText:\n${text}`
 }
+
+/** Generic "write this field for me" prompt used by the inline ✨ AI button
+ * attached to individual form fields throughout the wizard (About Me,
+ * Experience responsibilities/achievements, project descriptions, custom
+ * sections, etc). Works whether the field already has a rough draft (it
+ * polishes it) or is empty (it writes a sensible, non-invented default). */
+export function buildFieldWritePrompt(fieldLabel: string, context: string, draft: string): string {
+  const basis = draft.trim()
+    ? `The user's own notes or rough draft for this field — rewrite and polish this, keeping its meaning: "${draft.trim()}"`
+    : `The user has not written anything yet for this field. Write a solid, professional default appropriate for their role below. Keep it generic in tone rather than inventing specific facts — no fabricated employer names, numbers, dates, or achievements.`
+  return `Write a polished, professional "${fieldLabel}" for a personal profile website.\n\nContext about the person:\n${context || '(no additional context given)'}\n\n${basis}\n\n${GROUNDING_RULE}\n\nReturn only the finished text for this field — no preamble, no quotation marks, no markdown formatting.`
+}
