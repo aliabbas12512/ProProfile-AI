@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import type { ProfileData, EducationEntry, ExperienceEntry, ProjectEntry, CertificateEntry, CustomSection, ReferenceEntry } from '../types'
 import { newId, validateAndReadImage, validateAndReadCertificate, FileValidationError } from '../lib/files'
-import { PROFESSIONS, professionLabel } from '../lib/professions'
-import { getAISettings, runAIPrompt, buildFieldWritePrompt } from '../lib/ai'
+import { PROFESSIONS } from '../lib/professions'
 
 type Setter = React.Dispatch<React.SetStateAction<ProfileData>>
 
@@ -36,60 +35,12 @@ function Field({
   )
 }
 
-/** Small inline "write this field with AI" button. Shown next to a field's
- * label; sends whatever is already typed (or nothing) plus a short context
- * string to the configured AI provider and replaces the field with the
- * result. Disabled with a helpful hint until an API key is saved in the
- * AI tab — the rest of the wizard works identically without one. */
-function AIFieldButton({
-  fieldLabel, context, value, onResult,
-}: { fieldLabel: string; context: string; value: string; onResult: (text: string) => void }) {
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const configured = !!getAISettings()?.apiKey
-
-  const run = async () => {
-    if (!configured) {
-      setError('Add your AI key first — see the "AI" tab on the right.')
-      return
-    }
-    setBusy(true)
-    setError('')
-    try {
-      const text = await runAIPrompt(buildFieldWritePrompt(fieldLabel, context, value))
-      onResult(text.trim())
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'AI request failed.')
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  return (
-    <span className="inline-flex flex-col items-end">
-      <button
-        type="button"
-        onClick={run}
-        disabled={busy}
-        title={configured ? 'Write this with AI' : 'Add your AI key in the AI tab first'}
-        className="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 disabled:opacity-40 whitespace-nowrap"
-      >
-        {busy ? 'Writing…' : '✨ AI Write'}
-      </button>
-      {error && <span className="text-[10px] text-red-400 mt-0.5 max-w-[160px] text-right">{error}</span>}
-    </span>
-  )
-}
-
 function TextArea({
-  label, value, onChange, rows = 3, placeholder, ai,
-}: { label: string; value: string; onChange: (v: string) => void; rows?: number; placeholder?: string; ai?: { fieldLabel: string; context: string } }) {
+  label, value, onChange, rows = 3, placeholder,
+}: { label: string; value: string; onChange: (v: string) => void; rows?: number; placeholder?: string }) {
   return (
     <label className="block mb-3">
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-slate-300">{label}</span>
-        {ai && <AIFieldButton fieldLabel={ai.fieldLabel} context={ai.context} value={value} onResult={onChange} />}
-      </div>
+      <span className="text-xs font-medium text-slate-300">{label}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -224,16 +175,7 @@ function PersonalStep({ data, setData }: { data: ProfileData; setData: Setter })
       <Field label="WhatsApp" value={p.whatsapp} onChange={(v) => set({ whatsapp: v })} />
       <Field label="LinkedIn" value={p.linkedin} onChange={(v) => set({ linkedin: v })} />
       <Field label="Personal Website" value={p.website} onChange={(v) => set({ website: v })} />
-      <TextArea
-        label="Short Professional Introduction"
-        value={p.shortIntro}
-        onChange={(v) => set({ shortIntro: v })}
-        rows={3}
-        ai={{
-          fieldLabel: 'short professional introduction (1-2 sentences)',
-          context: `Name: ${p.fullName || '(not given)'}. Title: ${p.professionalTitle || '(not given)'}. Profession: ${professionLabel(data.profession)}.`,
-        }}
-      />
+      <TextArea label="Short Professional Introduction" value={p.shortIntro} onChange={(v) => set({ shortIntro: v })} rows={3} />
     </StepCard>
   )
 }
@@ -241,23 +183,10 @@ function PersonalStep({ data, setData }: { data: ProfileData; setData: Setter })
 function SummaryStep({ data, setData }: { data: ProfileData; setData: Setter }) {
   const s = data.summary
   const set = (patch: Partial<ProfileData['summary']>) => setData((d) => ({ ...d, summary: { ...d.summary, ...patch } }))
-  const baseContext = `Name: ${data.personal.fullName || '(not given)'}. Title: ${data.personal.professionalTitle || '(not given)'}. Profession: ${professionLabel(data.profession)}. Years of experience: ${s.yearsExperience || '(not given)'}. Industry: ${s.industry || '(not given)'}.`
   return (
     <StepCard>
-      <TextArea
-        label="About Me"
-        value={s.aboutMe}
-        onChange={(v) => set({ aboutMe: v })}
-        rows={4}
-        ai={{ fieldLabel: 'About Me biography (3-4 sentences)', context: baseContext }}
-      />
-      <TextArea
-        label="Career Objective"
-        value={s.careerObjective}
-        onChange={(v) => set({ careerObjective: v })}
-        rows={3}
-        ai={{ fieldLabel: 'career objective statement (1-2 sentences)', context: baseContext }}
-      />
+      <TextArea label="About Me" value={s.aboutMe} onChange={(v) => set({ aboutMe: v })} rows={4} />
+      <TextArea label="Career Objective" value={s.careerObjective} onChange={(v) => set({ careerObjective: v })} rows={3} />
       <Field label="Years of Experience" value={s.yearsExperience} onChange={(v) => set({ yearsExperience: v })} />
       <Field label="Current Position" value={s.currentPosition} onChange={(v) => set({ currentPosition: v })} />
       <Field label="Industry" value={s.industry} onChange={(v) => set({ industry: v })} />
@@ -317,26 +246,8 @@ function ExperienceStep({ data, setData }: { data: ProfileData; setData: Setter 
             <input type="checkbox" checked={e.current} onChange={(ev) => update(e.id, { current: ev.target.checked })} />
             I currently work here
           </label>
-          <TextArea
-            label="Responsibilities"
-            value={e.responsibilities}
-            onChange={(v) => update(e.id, { responsibilities: v })}
-            rows={3}
-            ai={{
-              fieldLabel: 'job responsibilities (2-3 sentences or bullet-style lines)',
-              context: `Job Title: ${e.jobTitle || '(not given)'}. Company: ${e.company || '(not given)'}. Profession: ${professionLabel(data.profession)}.`,
-            }}
-          />
-          <TextArea
-            label="Achievements"
-            value={e.achievements}
-            onChange={(v) => update(e.id, { achievements: v })}
-            rows={2}
-            ai={{
-              fieldLabel: 'key achievements in this role',
-              context: `Job Title: ${e.jobTitle || '(not given)'}. Company: ${e.company || '(not given)'}. Responsibilities already described: ${e.responsibilities || '(none written yet)'}.`,
-            }}
-          />
+          <TextArea label="Responsibilities" value={e.responsibilities} onChange={(v) => update(e.id, { responsibilities: v })} rows={3} />
+          <TextArea label="Achievements" value={e.achievements} onChange={(v) => update(e.id, { achievements: v })} rows={2} />
           <TextArea label="Project Details" value={e.projectDetails} onChange={(v) => update(e.id, { projectDetails: v })} rows={2} />
         </EntryCard>
       ))}
@@ -373,16 +284,7 @@ function ProjectsStep({ data, setData }: { data: ProfileData; setData: Setter })
       {data.projects.map((p) => (
         <EntryCard key={p.id} onRemove={() => remove(p.id)}>
           <Field label="Project Title" value={p.title} onChange={(v) => update(p.id, { title: v })} />
-          <TextArea
-            label="Description"
-            value={p.description}
-            onChange={(v) => update(p.id, { description: v })}
-            rows={2}
-            ai={{
-              fieldLabel: 'project description (1-2 sentences)',
-              context: `Project Title: ${p.title || '(not given)'}. Technologies: ${p.technologies || '(not given)'}.`,
-            }}
-          />
+          <TextArea label="Description" value={p.description} onChange={(v) => update(p.id, { description: v })} rows={2} />
           <label className="block mb-3">
             <span className="text-xs font-medium text-slate-300">Project Image</span>
             <input
@@ -486,13 +388,7 @@ function ContactStep({ data, setData }: { data: ProfileData; setData: Setter }) 
         {data.customSections.map((s) => (
           <EntryCard key={s.id} onRemove={() => removeCustom(s.id)}>
             <Field label="Section Title" value={s.title} onChange={(v) => updateCustom(s.id, { title: v })} placeholder="e.g. Publications, Services" />
-            <TextArea
-              label="Content"
-              value={s.content}
-              onChange={(v) => updateCustom(s.id, { content: v })}
-              rows={3}
-              ai={{ fieldLabel: s.title || 'custom section content', context: `Section title: ${s.title || '(not given)'}. Profession: ${professionLabel(data.profession)}.` }}
-            />
+            <TextArea label="Content" value={s.content} onChange={(v) => updateCustom(s.id, { content: v })} rows={3} />
           </EntryCard>
         ))}
       </div>

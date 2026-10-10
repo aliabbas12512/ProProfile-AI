@@ -7,10 +7,9 @@ import Wizard from '../components/Wizard'
 import PreviewPanel from '../components/PreviewPanel'
 import DesignPanel from '../components/DesignPanel'
 import ExportCenter from '../components/ExportCenter'
-import AIPanel from '../components/AIPanel'
 import ExportSource from '../components/ExportSource'
 
-type RightTab = 'design' | 'ai' | 'export'
+type RightTab = 'design' | 'export'
 
 export default function EditorPage() {
   const { id } = useParams()
@@ -90,7 +89,7 @@ export default function EditorPage() {
 
         <div className="border-l border-slate-800 overflow-hidden flex flex-col">
           <div className="flex border-b border-slate-800 flex-shrink-0">
-            {(['design', 'ai', 'export'] as RightTab[]).map((tab) => (
+            {(['design', 'export'] as RightTab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setRightTab(tab)}
@@ -102,7 +101,6 @@ export default function EditorPage() {
           </div>
           <div className="flex-1 overflow-hidden">
             {rightTab === 'design' && <DesignPanel data={data} setData={setData} />}
-            {rightTab === 'ai' && <AIPanel data={data} setData={setData} />}
             {rightTab === 'export' && <ExportCenter data={data} exportRef={exportRef} />}
           </div>
         </div>

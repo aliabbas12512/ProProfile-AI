@@ -44,7 +44,7 @@ git push -u origin main
    - Build Command: `npm run build`
    - Output Directory: `dist`
    - Install Command: `npm install`
-4. **Environment Variables: none required.** Leave this section empty — the app has no server-side API keys. (The optional AI panel takes a key from each visitor directly in the browser, stored only in their own `localStorage`.)
+4. **Environment Variables: none required.** Leave this section empty — the app has no backend and no API keys at all.
 5. Click **Deploy**. After ~1 minute you'll get a live URL like `your-project.vercel.app`.
 
 That's it — every visitor to that URL gets the full app: wizard, live preview, all 8 templates, HTML/ZIP/PDF export. Nothing to configure per-visitor.
@@ -102,10 +102,6 @@ connection for the app itself.
 | Print / Save as PDF | No |
 | **Opening the exported website later** (double-click the HTML file) | No |
 | `npm install` (first-time setup) | **Yes**, one time |
-| AI features (bio generation, grammar, skill suggestions, translation) | **Yes** — and only if you've added your own API key |
-
-The AI panel is entirely optional. Without an API key configured, every
-other part of the app works exactly the same.
 
 ## How the pieces fit together
 
@@ -182,10 +178,6 @@ after these changes — all still pass.
   complexity for the value it would add — the sections (education,
   experience, projects, certificates, etc.) already cover what every
   listed profession needs.
-- **AI features are implemented and will work with a real API key**, but
-  were not tested against a live key in this session (none was provided).
-  The request/response handling follows each provider's documented API
-  shape; if a provider changes their API, this is the first place to check.
 - **Drag-and-drop section reordering was not built.** Reordering uses
   up/down arrow buttons instead — functionally equivalent, less polished.
 - The print/PDF output relies on the browser's own "Print to PDF" — quality
@@ -205,11 +197,11 @@ after these changes — all still pass.
 ```
 src/
   types.ts                  Core data model (ProfileData and friends)
-  lib/                      Storage (IndexedDB), file handling, AI, export logic
+  lib/                      Storage (IndexedDB), file handling, export logic
   templates/
     layouts/                 4 shared layout engines
     sectionContent.tsx        Shared rendering for each profile section
     registry.tsx               Maps 8 template IDs to a layout + theme
-  components/                Wizard, live preview, design panel, AI panel, export center
+  components/                Wizard, live preview, design panel, export center
   pages/                      Home dashboard, template gallery, editor, print view
 ```
