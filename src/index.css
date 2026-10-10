@@ -1,0 +1,124 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #0b0f1a;
+}
+
+/* =========================================================================
+   Template content primitives.
+   Every layout engine sets these CSS variables on its own root element;
+   the shared section-content renderer (sectionContent.tsx) only ever
+   references the variables below, never a hardcoded color. This is what
+   lets 8 templates share one rendering core and still look genuinely
+   different.
+========================================================================= */
+
+.template-root {
+  --tpl-primary: #17233F;
+  --tpl-accent: #D8AD5E;
+  --tpl-bg: #ffffff;
+  --tpl-text: #1a1a1a;
+  --tpl-muted: #6b7280;
+  --tpl-radius: 10px;
+  --tpl-heading-font: 'Playfair Display', Georgia, serif;
+  --tpl-body-font: 'Inter', system-ui, sans-serif;
+  font-family: var(--tpl-body-font);
+  color: var(--tpl-text);
+  background: var(--tpl-bg);
+}
+
+.template-root h1, .template-root h2, .template-root h3 {
+  font-family: var(--tpl-heading-font);
+}
+
+.section-item-title {
+  font-weight: 700;
+  color: var(--tpl-text);
+  font-size: 1rem;
+}
+
+.section-date {
+  color: var(--tpl-accent);
+  font-weight: 600;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.section-body {
+  color: var(--tpl-text);
+  opacity: 0.88;
+  line-height: 1.65;
+  font-size: 0.93rem;
+}
+
+.section-link {
+  color: var(--tpl-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.section-chip {
+  background: color-mix(in srgb, var(--tpl-accent) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tpl-accent) 45%, transparent);
+  color: var(--tpl-text);
+  padding: 0.3em 0.85em;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.project-card {
+  background: color-mix(in srgb, var(--tpl-text) 4%, var(--tpl-bg));
+  border: 1px solid color-mix(in srgb, var(--tpl-text) 12%, transparent);
+  border-radius: var(--tpl-radius);
+  padding: 1rem;
+}
+
+.section-heading {
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  /* Uses --tpl-text (always contrast-correct per theme), never
+     --tpl-primary directly — a dark theme's primary color can equal its
+     own background, which made headings invisible. */
+  color: var(--tpl-text);
+}
+
+/* =========================================================================
+   Print / PDF export stylesheet.
+   Applied to the dedicated print route so "Print / Save as PDF" produces a
+   clean, paginated document instead of chopping the on-screen layout.
+========================================================================= */
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+  html, body {
+    background: #fff !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .template-root {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+  .print-page {
+    break-after: page;
+  }
+  .break-inside-avoid {
+    break-inside: avoid;
+  }
+}
