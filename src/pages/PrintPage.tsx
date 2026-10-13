@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import type { ProfileData } from '../types'
-import { loadProfile } from '../lib/db'
+import { loadProfile, saveProfile } from '../lib/db'
 import TemplateRenderer from '../templates/TemplateRenderer'
+import PaymentGate from '../components/PaymentGate'
 
 const CONCISE_KEYS = new Set(['summary', 'experience', 'education', 'skills', 'contact'])
 
@@ -26,6 +27,23 @@ export default function PrintPage() {
   if (profile === undefined) return <p className="p-8 text-slate-400">Loading…</p>
   if (profile === null) return <p className="p-8 text-slate-400">Project not found.</p>
   if (!printData) return null
+
+  const handleUnlocked = async () => {
+    const updated = { ...profile, unlocked: true }
+    await saveProfile(updated)
+    setProfile(updated)
+  }
+
+  if (!profile.unlocked) {
+    return (
+      <div className="min-h-screen bg-slate-950 px-4 py-10">
+        <div className="no-print max-w-md mx-auto mb-2">
+          <Link to={`/editor/${profile.id}`} className="text-xs text-slate-400 hover:text-white">← Back to editor</Link>
+        </div>
+        <PaymentGate data={profile} onUnlocked={handleUnlocked} />
+      </div>
+    )
+  }
 
   return (
     <div>

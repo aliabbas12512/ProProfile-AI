@@ -101,7 +101,7 @@ export default function EditorPage() {
           </div>
           <div className="flex-1 overflow-hidden">
             {rightTab === 'design' && <DesignPanel data={data} setData={setData} />}
-            {rightTab === 'export' && <ExportCenter data={data} exportRef={exportRef} />}
+            {rightTab === 'export' && <ExportCenter data={data} setData={setData} exportRef={exportRef} />}
           </div>
         </div>
       </div>

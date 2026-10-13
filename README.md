@@ -102,6 +102,40 @@ connection for the app itself.
 | Print / Save as PDF | No |
 | **Opening the exported website later** (double-click the HTML file) | No |
 | `npm install` (first-time setup) | **Yes**, one time |
+| Paying to unlock Print/PDF and website export | **Yes**, to open WhatsApp or see the WhatsApp/bank payment info |
+
+## Payment gate — 10 SAR to unlock Print/PDF and export
+
+Building the profile and seeing the live preview is always free. Once it's
+ready, downloading the final result — Print/PDF, the standalone HTML file,
+or the website ZIP — is gated behind a one-time 10 SAR payment per project.
+Project JSON backup stays free (it's a safety backup of your own work, not
+the finished deliverable).
+
+**How a buyer unlocks it:**
+1. On the Export tab (or the Print page), they see a short 8-character
+   Project ID and two ways to pay: a **"Pay 10 SAR via WhatsApp"** button
+   (opens a chat to **0508202459** with the Project ID pre-filled), or a
+   **bank transfer** (IBAN `SA59 8000 0859 6080 1965 6721`, account title
+   ALI ABBAS SHAHADAT ALI).
+2. They send the payment/receipt on WhatsApp.
+3. You open **`/#/admin`** on the deployed site (password `ProProfileAli2026`
+   — change it in `src/pages/AdminPage.tsx` if you want a different one),
+   paste in their Project ID, and it shows a 6-digit unlock code.
+4. You send that code back on WhatsApp. They type it into the unlock box
+   and Print/PDF + export open up immediately, saved against that project.
+
+**Be clear-eyed about what this is and isn't:** there is no backend here,
+so this cannot be real payment verification — nothing checks that money
+actually arrived before you hand out a code, and nothing stops a
+technically-minded visitor from reading the unlock-code logic in the
+shipped JavaScript (`src/lib/unlock.ts`) and computing their own code
+without paying. It's a friction-and-trust mechanism suited to a low-value,
+manual, one-person business — not the same thing as Stripe/Moyasar/PayTabs
+checking a card payment server-side. If this business grows and you want
+unlock codes nobody can self-generate, that needs a real backend + payment
+gateway account (Moyasar/PayTabs/HyperPay are the common Saudi options) —
+a bigger, separate build.
 
 ## How the pieces fit together
 
@@ -197,11 +231,11 @@ after these changes — all still pass.
 ```
 src/
   types.ts                  Core data model (ProfileData and friends)
-  lib/                      Storage (IndexedDB), file handling, export logic
+  lib/                      Storage (IndexedDB), file handling, export logic, unlock codes
   templates/
     layouts/                 4 shared layout engines
     sectionContent.tsx        Shared rendering for each profile section
     registry.tsx               Maps 8 template IDs to a layout + theme
-  components/                Wizard, live preview, design panel, export center
-  pages/                      Home dashboard, template gallery, editor, print view
+  components/                Wizard, live preview, design panel, export center, payment gate
+  pages/                      Home dashboard, gallery, editor, print view, admin (unlock codes)
 ```

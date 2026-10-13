@@ -163,6 +163,7 @@ export interface ProfileData {
   references: ReferenceEntry[]
   sections: SectionVisibility[]
   theme: ThemeSettings
+  unlocked: boolean
   createdAt: number
   updatedAt: number
 }
@@ -233,6 +234,7 @@ export function createEmptyProfile(partial?: Partial<ProfileData>): ProfileData 
       darkMode: false,
       photoShape: 'circle',
     },
+    unlocked: false,
     createdAt: now,
     updatedAt: now,
     ...partial,

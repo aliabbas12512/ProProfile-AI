@@ -4,12 +4,15 @@ import type { ProfileData } from '../types'
 import { buildStandaloneHtml, getAllAppCss, slugify } from '../lib/exportHtml'
 import { exportWebsiteZip } from '../lib/exportZip'
 import { downloadTextFile, exportProjectJson } from '../lib/db'
+import PaymentGate from './PaymentGate'
 
 export default function ExportCenter({
   data,
+  setData,
   exportRef,
 }: {
   data: ProfileData
+  setData: React.Dispatch<React.SetStateAction<ProfileData>>
   exportRef: React.RefObject<HTMLDivElement | null>
 }) {
   const navigate = useNavigate()
@@ -48,29 +51,40 @@ export default function ExportCenter({
   }
 
   const openPrintView = (mode: 'concise' | 'detailed') => {
+    if (!data.unlocked) return
     navigate(`/print/${data.id}?mode=${mode}`)
+  }
+
+  const handleUnlocked = () => {
+    setData((d) => ({ ...d, unlocked: true }))
   }
 
   return (
     <div className="h-full overflow-y-auto px-4 py-4 text-slate-200">
+      {!data.unlocked && (
+        <div className="mb-5">
+          <PaymentGate data={data} onUnlocked={handleUnlocked} compact />
+        </div>
+      )}
+
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Export Website</h3>
 
-      <button onClick={downloadHtml} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 rounded-md px-3 py-2.5 mb-2 border border-slate-700">
+      <button onClick={downloadHtml} disabled={!data.unlocked} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-800 rounded-md px-3 py-2.5 mb-2 border border-slate-700">
         <span className="font-semibold block">Download HTML</span>
         <span className="text-[11px] text-slate-400">Single self-contained file, opens offline in any browser.</span>
       </button>
 
-      <button onClick={downloadZip} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 rounded-md px-3 py-2.5 mb-5 border border-slate-700">
+      <button onClick={downloadZip} disabled={!data.unlocked} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-800 rounded-md px-3 py-2.5 mb-5 border border-slate-700">
         <span className="font-semibold block">Download Website ZIP</span>
         <span className="text-[11px] text-slate-400">index.html + README, zipped.</span>
       </button>
 
       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">PDF / Print</h3>
-      <button onClick={() => openPrintView('concise')} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 rounded-md px-3 py-2.5 mb-2 border border-slate-700">
+      <button onClick={() => openPrintView('concise')} disabled={!data.unlocked} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-800 rounded-md px-3 py-2.5 mb-2 border border-slate-700">
         <span className="font-semibold block">Concise Profile</span>
         <span className="text-[11px] text-slate-400">Summary, experience, education, skills, contact.</span>
       </button>
-      <button onClick={() => openPrintView('detailed')} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 rounded-md px-3 py-2.5 mb-5 border border-slate-700">
+      <button onClick={() => openPrintView('detailed')} disabled={!data.unlocked} className="w-full text-left text-sm bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-slate-800 rounded-md px-3 py-2.5 mb-5 border border-slate-700">
         <span className="font-semibold block">Detailed Portfolio</span>
         <span className="text-[11px] text-slate-400">Every visible section, including projects &amp; certificates.</span>
       </button>
